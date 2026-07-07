@@ -1,5 +1,5 @@
 ---
-title: "Add and Extract Metadata from BMP Files"
+title: "Add and Extract Custom Metadata in BMP Image Files"
 sidebarTitle: "Metadata Operations"
 description: "Embed custom key-value metadata into BMP files using the CLI or Python API, with CRC32 integrity checking and optional AES-256-GCM encryption."
 ---
@@ -85,6 +85,15 @@ bmp.save("photo_meta.bmp")
 extracted = bmp.extract_metadata(password="strong-password")
 print(extracted.to_dict())
 # {'Author': 'Alice', 'Date': '2024-01-15', 'Project': 'Research'}
+
+# Read a single value
+author = extracted.get("Author")
+print(author)  # Alice
+
+# Remove an entry and re-save
+extracted.remove("Project")
+bmp.add_metadata(extracted)
+bmp.save("photo_meta_updated.bmp")
 ```
 
 ## Storage Methods

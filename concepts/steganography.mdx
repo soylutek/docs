@@ -1,5 +1,5 @@
 ---
-title: "Steganography Techniques in BMP Manipulator"
+title: "BMP Steganography: LSB, Palette, and Header Techniques"
 sidebarTitle: "Steganography"
 description: "BMP Manipulator supports LSB, palette-based, and header-field steganography to hide text or binary data invisibly inside BMP image files."
 ---
@@ -78,7 +78,7 @@ Use this table to match your requirements to the right technique:
 | Header Fields | Minimal (≤ 10 bytes) | Minimal | Signatures, keys, version tags |
 
 <Warning>
-LSB steganography can be detected by statistical steganalysis tools that analyse the distribution of least significant bits across pixel channels. To maximise resistance, always encrypt your payload with `--password` before embedding (this randomises the bit pattern), keep bit depth at 1, and choose carrier images with natural texture rather than flat gradients or solid colour regions.
+LSB steganography can be detected by statistical steganalysis tools that analyse the distribution of least significant bits across pixel channels. To maximise resistance, always encrypt your payload with `--password` before embedding — BMP Manipulator uses AES-256-GCM or ChaCha20-Poly1305, both of which produce output indistinguishable from random noise. Keep bit depth at 1 and choose carrier images with natural texture rather than flat gradients or solid colour regions.
 </Warning>
 
 ## Steganalysis Resistance
@@ -87,4 +87,5 @@ BMP Manipulator applies several techniques to make embedded data harder to detec
 
 - **Scattered embedding** — Payload bits are distributed non-sequentially across the pixel array using a deterministic pseudorandom mapping rather than filled in from top-left to bottom-right. This prevents the telltale signature of a clean boundary between modified and unmodified rows.
 - **Statistical noise injection** — BMP Manipulator models the natural noise distribution of the carrier image and injects calibrated variation into unoccupied channel bits to maintain histogram shape after embedding, reducing the effectiveness of chi-square and RS steganalysis.
+- **Decoy data injection** — BMP Manipulator can inject plausible-looking false data into unoccupied regions alongside the real payload. This misleads steganalysis tools by making them unable to distinguish actual hidden content from decoy noise, even when the analyst already suspects the file contains embedded data.
 - **Signature avoidance** — The tool avoids known steganography tool signatures in byte sequences, header values, and payload alignment patterns, reducing hits from signature-based steganalysis scanners.

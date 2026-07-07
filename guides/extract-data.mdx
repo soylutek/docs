@@ -1,5 +1,5 @@
 ---
-title: "Extract Hidden Data and Metadata from BMP Files"
+title: "Extract Steganographic Payloads and Metadata from BMPs"
 sidebarTitle: "Extract Data"
 description: "Retrieve metadata key-value pairs and steganographic payloads from BMP files using the CLI or Python API, with password decryption support."
 ---
@@ -70,8 +70,8 @@ if meta:
     print(meta.to_dict())
 
 # Extract steganographic text
-extracted_text = LSBSteganography.extract_text(
-    "photo_stego.bmp",
+stego = LSBSteganography(BMPFile("photo_stego.bmp"))
+extracted_text = stego.extract_text(
     encoding="utf-8",
     bit_depth=1,
     channels=3,

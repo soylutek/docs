@@ -1,5 +1,5 @@
 ---
-title: "Python API Reference for BMP Manipulator"
+title: "Python API Reference: BMPFile, Metadata, LSBSteganography"
 sidebarTitle: "Python API"
 description: "Full reference for BMPFile, Metadata, and LSBSteganography classes including constructor parameters, method signatures, and return types."
 ---
@@ -8,7 +8,7 @@ Import the classes you need directly from the `bmp_manipulator` module:
 
 ```python
 from bmp_manipulator import BMPFile, Metadata, LSBSteganography
-from bmp_manipulator import MetadataStorageMethod, StegoMethod
+from bmp_manipulator import MetadataStorageMethod
 ```
 
 ---
@@ -39,7 +39,7 @@ Load a BMP from disk and parse all header fields and pixel data.
 
 **`get_info() -> dict`**
 
-Return a dictionary describing the file. Keys: `file_path`, `width`, `height`, `bits_per_pixel`, `header_type`, `compression_type`, `pixel_data_offset`, `file_size`, `has_metadata`.
+Return a dictionary describing the file. Keys: `file_name`, `file_size`, `header_type`, `dimensions`, `bit_depth`, `compression`, `has_metadata`. When metadata is present, a `metadata_keys` list is also included.
 
 ---
 
@@ -94,7 +94,9 @@ Write the BMP — including any attached metadata — to disk.
 ```python
 bmp = BMPFile("photo.bmp")
 info = bmp.get_info()
-print(info["width"], info["height"])
+print(info["dimensions"])   # e.g. "800x600"
+print(info["bit_depth"])    # e.g. 24
+print(info["header_type"])  # e.g. "BITMAPINFOHEADER"
 ```
 
 ---
@@ -111,15 +113,15 @@ Metadata()
 
 ### Methods
 
-**`add(key: str, value: str) -> None`**
+**`add(key: str, value: Union[str, bytes, int, float, dict, list]) -> None`**
 
-Insert or overwrite a metadata entry.
+Insert or overwrite a metadata entry. Dictionary and list values are serialised to JSON automatically.
 
 ---
 
-**`get(key: str) -> Optional[str]`**
+**`get(key: str) -> Any`**
 
-Retrieve the value for a key, or `None` if the key does not exist.
+Retrieve the value for a key. Raises `MetadataError` if the key does not exist.
 
 ---
 

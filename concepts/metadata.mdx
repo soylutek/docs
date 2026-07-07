@@ -1,7 +1,7 @@
 ---
-title: "How BMP Manipulator Embeds File Metadata"
+title: "BMP Manipulator Metadata: Storage, Integrity, and Encryption"
 sidebarTitle: "Metadata"
-description: "BMP Manipulator stores metadata as key-value pairs in an EOF-appended BMPM block with CRC32 integrity checking and optional AES-256 encryption."
+description: "BMP Manipulator stores metadata as key-value pairs in a BMPM block with CRC32 integrity checking and optional AES-256-GCM or ChaCha20-Poly1305 encryption."
 ---
 
 In BMP Manipulator, **metadata** refers to arbitrary key-value data that you attach to a BMP file — information like author, creation date, project tags, or any custom fields your workflow requires. This data travels with the image file, survives copies and transfers, and can be extracted programmatically at any time. Unlike EXIF in JPEG or iTXt in PNG, BMP has no native metadata standard, so BMP Manipulator defines its own structured format built directly into the file binary.
@@ -30,10 +30,10 @@ The `EOF_APPEND` block (and the `APPLICATION_BLOCK` variant) uses a consistent b
 |---|---|---|
 | Signature | 4 bytes | `BMPM` — magic identifier marking the start of the block |
 | Block Size | 4 bytes | Total byte length of the entire block, including this header |
-| Version | 1 byte | Format version number for forward compatibility |
+| Version | 2 bytes | Format version number for forward compatibility |
 | Encryption Flag | 1 byte | `0x00` = plaintext, `0x01` = AES-256-GCM encrypted content |
-| Reserved | 2 bytes | Set to zero; reserved for future format extensions |
-| Metadata Count | 4 bytes | Number of key-value entries that follow |
+| Reserved | 1 byte | Set to zero; reserved for future format extensions |
+| Metadata Count | 2 bytes | Number of key-value entries that follow |
 | Metadata Entries | Variable | Serialized key-value pairs (see entry format below) |
 | CRC32 Checksum | 4 bytes | CRC32 of all preceding block bytes for integrity verification |
 
@@ -59,7 +59,7 @@ This means any accidental corruption, truncation, or deliberate tampering with t
 
 ## Encryption
 
-Metadata values can be encrypted with **AES-256-GCM** before being written into the BMPM block. When encryption is active, the Encryption Flag byte is set to `0x01`, and the metadata entries are replaced with ciphertext. The key is derived from your password using PBKDF2 with 100,000 iterations. Extraction requires the same password; without it, the block is unreadable.
+Metadata values can be encrypted before being written into the BMPM block. BMP Manipulator supports two authenticated encryption algorithms: **AES-256-GCM** and **ChaCha20-Poly1305**. When encryption is active, the Encryption Flag byte is set to `0x01`, and the metadata entries are replaced with ciphertext. The key is derived from your password using PBKDF2HMAC with 100,000 iterations. Extraction requires the same password; without it, the block is unreadable.
 
 For a full walkthrough of encrypted metadata, see the [Encryption guide](/guides/encryption).
 
