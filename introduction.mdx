@@ -1,0 +1,73 @@
+---
+title: "BMP Manipulator: Metadata & Steganography Toolkit"
+sidebarTitle: "Introduction"
+description: "BMP Manipulator is a Python library and CLI for embedding metadata and hiding data inside BMP images with AES-256 or ChaCha20 encryption."
+---
+
+BMP Manipulator is a Python library and command-line tool for working with BMP (Bitmap) files beyond basic image editing. It targets the parts of the BMP format that most tools ignore — headers, reserved fields, and unused space — and turns them into a structured environment for metadata management, steganography, and forensic analysis. Whether you need to embed hidden payloads, inspect raw header bytes, or encrypt data inside an image, BMP Manipulator gives you the primitives to do it cleanly from Python code or the terminal.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Clone the repo and install dependencies in under two minutes.
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Inspect a BMP file, embed metadata, and hide your first secret message.
+  </Card>
+  <Card title="Python API Reference" icon="code" href="/reference/python-api">
+    Full reference for `BMPFile`, `Metadata`, `LSBSteganography`, and more.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/reference/cli">
+    Every command, flag, and option for `bmp_manipulator.py`.
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Full BMP Header Management" icon="file-code">
+    Read, write, and validate every field of the BMP file header and DIB header across all supported header versions — including reserved fields that most tools silently ignore.
+  </Card>
+  <Card title="Metadata Embedding" icon="tag">
+    Attach key-value pairs, JSON blobs, or XMP-compatible metadata to any BMP file. Metadata is stored in reserved header space, application extension blocks, or end-of-file sections — all with checksum verification.
+  </Card>
+  <Card title="Steganography" icon="eye-slash">
+    Hide text or arbitrary files inside BMP images using LSB (Least Significant Bit) encoding, palette manipulation, or header-field steganography. Choose bit depth (1–4 bits) and target colour channel(s) per operation.
+  </Card>
+  <Card title="Encryption" icon="lock">
+    Encrypt payloads with AES-256-GCM or ChaCha20-Poly1305 before embedding. Encryption applies to both metadata and steganographic data, so the carrier image reveals nothing without the correct password.
+  </Card>
+  <Card title="Python API" icon="python">
+    Import `BMPFile`, `Metadata`, and `LSBSteganography` directly into your own scripts for programmatic batch processing, automated pipelines, or integration testing.
+  </Card>
+  <Card title="CLI Interface" icon="terminal">
+    Run `info`, `metadata add`, `metadata extract`, `stego hide`, and `stego extract` from the command line — no Python knowledge required for routine tasks.
+  </Card>
+</CardGroup>
+
+## Supported BMP Formats
+
+BMP Manipulator supports the three most widely used DIB header variants and three colour depths. Compressed formats (`BI_RLE8`, `BI_RLE4`) and the legacy `BITMAPCOREHEADER` (12 bytes) are **not** supported.
+
+### Header Types
+
+| Header | Size | Notes |
+|---|---|---|
+| `BITMAPINFOHEADER` | 40 bytes | Most common; baseline support for all features |
+| `BITMAPV4HEADER` | 108 bytes | Adds colour-space information; reserved fields available for metadata |
+| `BITMAPV5HEADER` | 124 bytes | Adds ICC colour profile offset; maximum reserved field space |
+
+### Colour Depths
+
+| Colour Depth | Description |
+|---|---|
+| 8-bit indexed (paletted) | Supports palette-manipulation steganography in addition to LSB |
+| 24-bit RGB | Primary target for LSB steganography |
+| 32-bit RGBA | LSB steganography with alpha-channel support |
+
+## When to Use BMP Manipulator
+
+**Security research and digital forensics.** BMP Manipulator lets you study exactly which header bytes a given tool reads, which it ignores, and what an attacker could hide in the gaps — making it a practical companion for forensic image analysis and CTF challenges.
+
+**Secure data embedding.** When you need to attach provenance information, watermarks, or confidential notes to an image without altering its visible content, BMP Manipulator gives you multiple embedding strategies (header fields, EOF blocks, LSB pixels) with optional AES-256-GCM or ChaCha20-Poly1305 encryption so the data stays private.
+
+**Academic and educational use.** The BMP format's simple, well-documented structure makes it the ideal teaching subject for steganography algorithms and file-format internals. BMP Manipulator's explicit, single-file architecture keeps the implementation readable and easy to extend.

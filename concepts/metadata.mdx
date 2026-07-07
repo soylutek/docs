@@ -1,0 +1,68 @@
+---
+title: "How BMP Manipulator Embeds File Metadata"
+sidebarTitle: "Metadata"
+description: "BMP Manipulator stores metadata as key-value pairs in an EOF-appended BMPM block with CRC32 integrity checking and optional AES-256 encryption."
+---
+
+In BMP Manipulator, **metadata** refers to arbitrary key-value data that you attach to a BMP file — information like author, creation date, project tags, or any custom fields your workflow requires. This data travels with the image file, survives copies and transfers, and can be extracted programmatically at any time. Unlike EXIF in JPEG or iTXt in PNG, BMP has no native metadata standard, so BMP Manipulator defines its own structured format built directly into the file binary.
+
+## Storage Methods
+
+BMP Manipulator gives you three methods for embedding metadata, each suited to different capacity and compatibility requirements:
+
+**1. Header Extension (`HEADER_EXTENSION`)**
+
+This method repurposes reserved or unused fields in the existing BMP file header and DIB header — for example, `bfReserved1`, `bfReserved2`, `biXPelsPerMeter`, `biYPelsPerMeter`, and the `bV5Reserved` field in BITMAPV5HEADER. Because these fields are already present in the file, no extra bytes are added to the file size. The tradeoff is capacity: the combined available space across all usable header fields is only a few tens of bytes. Use this method when you need a tiny fingerprint or token embedded with minimal file-size change.
+
+**2. Application Block (`APPLICATION_BLOCK`)**
+
+This method inserts a structured application-extension block into the file body, between the pixel data and the end of the file. It uses an application-specific identifier to distinguish BMP Manipulator blocks from other tools' data. Capacity is larger than header extension but bounded by your willingness to grow the file size during normal read cycles. This method is suited to medium-volume structured metadata where in-body placement matters.
+
+**3. EOF Append (`EOF_APPEND`)**
+
+This is the default and recommended method. BMP Manipulator appends a `BMPM`-signed metadata block directly after the last byte of pixel data. Because standard BMP renderers read only up to the pixel data offset declared in `bfOffBits`, the appended block is completely invisible to image viewers — the file still opens and displays normally. There is no practical size limit, and the block carries its own integrity checksum. Use `EOF_APPEND` for all general-purpose metadata unless you have a specific reason to prefer another method.
+
+## The BMPM Block Format
+
+The `EOF_APPEND` block (and the `APPLICATION_BLOCK` variant) uses a consistent binary layout identifiable by its four-byte `BMPM` magic signature:
+
+| Field | Size | Description |
+|---|---|---|
+| Signature | 4 bytes | `BMPM` — magic identifier marking the start of the block |
+| Block Size | 4 bytes | Total byte length of the entire block, including this header |
+| Version | 1 byte | Format version number for forward compatibility |
+| Encryption Flag | 1 byte | `0x00` = plaintext, `0x01` = AES-256-GCM encrypted content |
+| Reserved | 2 bytes | Set to zero; reserved for future format extensions |
+| Metadata Count | 4 bytes | Number of key-value entries that follow |
+| Metadata Entries | Variable | Serialized key-value pairs (see entry format below) |
+| CRC32 Checksum | 4 bytes | CRC32 of all preceding block bytes for integrity verification |
+
+Each metadata entry is serialized in a compact length-prefixed format:
+
+```text
+┌─────────────────────┬──────────┐
+│ Key Length          │ 2 bytes  │
+├─────────────────────┼──────────┤
+│ Value Length        │ 4 bytes  │
+├─────────────────────┼──────────┤
+│ Key                 │ Variable │  (UTF-8 encoded)
+├─────────────────────┼──────────┤
+│ Value               │ Variable │  (UTF-8 or binary)
+└─────────────────────┴──────────┘
+```
+
+## Integrity Checking
+
+Every BMPM block ends with a CRC32 checksum computed over all preceding bytes in the block — from the `BMPM` signature through the last metadata entry byte. When you extract metadata, BMP Manipulator recomputes the CRC32 and compares it to the stored value. If they differ, extraction fails with an integrity error.
+
+This means any accidental corruption, truncation, or deliberate tampering with the metadata block is detected immediately. You do not need to keep a separate hash or manifest file — the integrity check is self-contained inside the BMP.
+
+## Encryption
+
+Metadata values can be encrypted with **AES-256-GCM** before being written into the BMPM block. When encryption is active, the Encryption Flag byte is set to `0x01`, and the metadata entries are replaced with ciphertext. The key is derived from your password using PBKDF2 with 100,000 iterations. Extraction requires the same password; without it, the block is unreadable.
+
+For a full walkthrough of encrypted metadata, see the [Encryption guide](/guides/encryption).
+
+<Tip>
+Use `EOF_APPEND` for the vast majority of metadata tasks. It is the default, it imposes no size limit, it does not alter any header fields that could affect rendering, and it carries its own CRC32 integrity check. Switch to `HEADER_EXTENSION` only when you need a small, invisible tag with zero file-size growth.
+</Tip>

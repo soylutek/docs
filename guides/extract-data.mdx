@@ -1,0 +1,109 @@
+---
+title: "Extract Hidden Data and Metadata from BMP Files"
+sidebarTitle: "Extract Data"
+description: "Retrieve metadata key-value pairs and steganographic payloads from BMP files using the CLI or Python API, with password decryption support."
+---
+
+BMP Manipulator lets you recover two distinct types of embedded content from a BMP file: **metadata blocks** — structured key-value pairs attached to the file — and **steganographic payloads** — text strings or binary files hidden inside the pixel data using LSB steganography. Both types can be password-protected, and both can be extracted through the CLI or the Python API.
+
+## Extract Metadata (CLI)
+
+Use the `metadata extract` subcommand to read key-value pairs stored in a BMP file. If the metadata was written without a password, omit `--password`:
+
+```bash
+# Unencrypted
+python bmp_manipulator.py metadata extract photo_meta.bmp
+
+# With password
+python bmp_manipulator.py metadata extract photo_secure.bmp \
+  --password "strong-password"
+```
+
+**Example output:**
+
+```
+Metadata found:
+  Author: Alice
+  Date: 2024-01-15
+  Project: Research
+```
+
+## Extract Steganographic Text (CLI)
+
+Use the `stego extract` subcommand to retrieve text hidden in the pixel data. Supply the same `--bit-depth` and `--channels` values that were used when the data was hidden (see [Matching Extraction Parameters](#matching-extraction-parameters) below):
+
+```bash
+# No password
+python bmp_manipulator.py stego extract photo_stego.bmp
+
+# With password
+python bmp_manipulator.py stego extract photo_secure.bmp \
+  --password "super-secret"
+
+# With explicit bit depth / channel settings
+python bmp_manipulator.py stego extract photo_stego.bmp \
+  --bit-depth 2 --channels 1
+```
+
+## Extract Steganographic File (CLI)
+
+If the steganographic payload is a binary file rather than plain text, pass `--output` to write the recovered bytes directly to disk:
+
+```bash
+python bmp_manipulator.py stego extract photo_with_file.bmp \
+  --output recovered_document.pdf
+```
+
+The CLI prints the number of bytes written so you can confirm the file was recovered intact.
+
+## Using the Python API
+
+The Python API gives you fine-grained control over the extraction process and integrates cleanly into your own scripts and pipelines:
+
+```python
+from bmp_manipulator import BMPFile, LSBSteganography
+
+# Extract metadata
+bmp = BMPFile("photo_meta.bmp")
+meta = bmp.extract_metadata(password="strong-password")
+if meta:
+    print(meta.to_dict())
+
+# Extract steganographic text
+extracted_text = LSBSteganography.extract_text(
+    "photo_stego.bmp",
+    encoding="utf-8",
+    bit_depth=1,
+    channels=3,
+    password="optional-password"
+)
+print(extracted_text)
+
+# Extract binary data
+stego = LSBSteganography(BMPFile("photo_with_file.bmp"))
+raw_bytes = stego.extract_data(bit_depth=1, channels=3)
+with open("recovered.pdf", "wb") as f:
+    f.write(raw_bytes)
+```
+
+## Matching Extraction Parameters
+
+<Warning>
+  You must use the **exact same** `--bit-depth` and `--channels` values that were used when hiding the data. Extraction with mismatched parameters will not raise an error — it will silently return garbled or meaningless bytes instead of your original payload.
+</Warning>
+
+For example, if you hid data with `--bit-depth 2 --channels 1`, you must extract with the same flags:
+
+```bash
+# Hide
+python bmp_manipulator.py stego hide photo.bmp \
+  --text "Secret" --bit-depth 2 --channels 1 --output photo_stego.bmp
+
+# Extract — parameters must match exactly
+python bmp_manipulator.py stego extract photo_stego.bmp \
+  --bit-depth 2 --channels 1
+```
+
+<Tip>
+  Record the `--bit-depth`, `--channels`, and `--password` values you use for each file in a secure note or password manager entry. Without them, recovering the payload is not possible.
+</Tip>

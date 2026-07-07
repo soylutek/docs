@@ -1,47 +1,126 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with BMP Manipulator in 5 Minutes"
+sidebarTitle: "Quickstart"
+description: "Learn how to inspect a BMP file, add metadata, and hide a secret message using BMP Manipulator's CLI and Python API in under 5 minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+By the end of this guide, you will have installed BMP Manipulator, inspected a real BMP file's header and metadata, embedded custom key-value metadata into it, and hidden a secret text message using LSB steganography — all from both the CLI and the Python API.
 
 <Steps>
+
   <Step title="Install">
-    Describe how to install your product or sign up.
+    Clone the repository and install the required dependencies:
 
     ```bash
-    npm install your-package
+    git clone https://github.com/soyluoltu/bmp-manipulations.git
+    cd bmp-manipulations
+    pip install -r requirements.txt
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Inspect a BMP File">
+    Run the `info` command to view the header details and metadata status of any BMP file:
 
     ```bash
-    your-cli init
+    python bmp_manipulator.py info photo.bmp
     ```
+
+    You should see output similar to:
+
+    ```
+    File: photo.bmp
+    Size: 1,382,454 bytes
+    Header Type: BITMAPINFOHEADER
+    Dimensions: 800 x 576
+    Bit Depth: 24
+    Compression: BI_RGB
+    Metadata: None
+    ```
+
+    This confirms the file's dimensions, colour depth, compression method, and whether any metadata is already embedded.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+
+  <Step title="Add Metadata">
+    Use the `metadata add` command to embed a key-value pair into your BMP file:
 
     ```bash
-    your-cli start
+    python bmp_manipulator.py metadata add photo.bmp \
+      --key "Author" --value "Alice" \
+      --output photo_meta.bmp
     ```
+
+    Verify the metadata was written correctly by extracting it:
+
+    ```bash
+    python bmp_manipulator.py metadata extract photo_meta.bmp
+    ```
+
+    The output will list every key-value pair stored in the file's metadata section.
   </Step>
+
+  <Step title="Hide a Secret Message">
+    Embed a secret text string into a BMP file using LSB steganography:
+
+    ```bash
+    python bmp_manipulator.py stego hide photo.bmp \
+      --text "This is a secret" \
+      --output photo_stego.bmp
+    ```
+
+    Retrieve the hidden message at any time with the `stego extract` command:
+
+    ```bash
+    python bmp_manipulator.py stego extract photo_stego.bmp
+    ```
+
+    The hidden text is stored in the least-significant bits of the pixel data, leaving the image visually unchanged.
+  </Step>
+
+  <Step title="Use the Python API">
+    You can perform the same operations programmatically by importing BMP Manipulator directly into your Python code:
+
+    ```python
+    from bmp_manipulator import BMPFile, Metadata, LSBSteganography
+
+    # Load and inspect
+    bmp = BMPFile("photo.bmp")
+    info = bmp.get_info()
+    print(f"Dimensions: {info['width']}x{info['height']}")
+
+    # Add metadata
+    meta = Metadata()
+    meta.add("Author", "Alice")
+    bmp.add_metadata(meta)
+    bmp.save("photo_meta.bmp")
+
+    # Hide text
+    stego = LSBSteganography(bmp)
+    stego.hide_text("This is a secret")
+    bmp.save("photo_stego.bmp")
+    ```
+
+    The `BMPFile` class handles all header parsing and file I/O, `Metadata` manages key-value pairs, and `LSBSteganography` encodes or decodes hidden data in pixel bytes.
+  </Step>
+
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+<Note>
+  To protect your hidden data with a password before embedding it, see the [Encryption guide](/guides/encryption). Combining encryption with steganography ensures that even if someone detects the hidden payload, they cannot read it without the correct passphrase.
+</Note>
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Metadata Operations" icon="tags" href="/guides/metadata-operations">
+    Add, update, and remove key-value metadata fields in BMP files using both the CLI and Python API.
+  </Card>
+  <Card title="Steganography Guide" icon="eye-slash" href="/guides/hide-data">
+    Explore LSB and palette-based techniques for hiding text and binary files inside BMP images.
+  </Card>
+  <Card title="Python API Reference" icon="code" href="/reference/python-api">
+    Browse the full class and method reference for `BMPFile`, `Metadata`, `LSBSteganography`, and more.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/reference/cli">
+    View every available command, flag, and option for the `bmp_manipulator.py` command-line interface.
+  </Card>
+</CardGroup>

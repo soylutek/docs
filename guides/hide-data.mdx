@@ -1,0 +1,106 @@
+---
+title: "Hide Text and Files Inside BMP Images"
+sidebarTitle: "Hide Data"
+description: "Use LSB steganography to embed text messages or binary files invisibly inside BMP images with configurable bit depth, channel selection, and optional encryption."
+---
+
+BMP Manipulator's LSB (Least Significant Bit) steganography hides text messages or arbitrary binary files inside the pixel data of a BMP image by overwriting the lowest-order bits of each color channel. Because the human eye cannot distinguish a one-bit change in color value, the output BMP looks visually identical to the original. You can tune how many bits per channel to use and which color channels to target, giving you control over both capacity and detectability.
+
+## Check Available Capacity
+
+Before embedding data, calculate how much space is available in your carrier image. Capacity depends on the image dimensions, the number of channels you target, and the bit depth you choose:
+
+```python
+from bmp_manipulator import BMPFile, LSBSteganography
+
+bmp = BMPFile("photo.bmp")
+stego = LSBSteganography(bmp)
+
+# Default: 1 bit per channel, all 3 channels
+capacity = stego.calculate_capacity(bit_depth=1, channels=3)
+print(f"Available capacity: {capacity} bytes ({capacity // 1024} KB)")
+```
+
+## Hide Text (CLI)
+
+Use the `stego hide` subcommand with `--text` to embed a string message:
+
+```bash
+# Simple text hide
+python bmp_manipulator.py stego hide photo.bmp \
+  --text "This is my secret message" \
+  --output photo_stego.bmp
+
+# With encryption and higher bit depth
+python bmp_manipulator.py stego hide photo.bmp \
+  --text "Confidential data" \
+  --bit-depth 2 \
+  --channels 3 \
+  --password "super-secret" \
+  --output photo_secure.bmp
+```
+
+## Hide a File (CLI)
+
+Pass `--file` instead of `--text` to embed any binary file — PDFs, ZIPs, archives, or any other format:
+
+```bash
+# Embed any file (PDF, ZIP, etc.)
+python bmp_manipulator.py stego hide photo.bmp \
+  --file secret_document.pdf \
+  --output photo_with_file.bmp
+```
+
+## Channel and Bit Depth Options
+
+Use `--channels` to control which color channels carry the hidden data:
+
+| `--channels` | Channels Used | Description |
+|---|---|---|
+| `1` | Blue only | Least visible change |
+| `2` | Green + Blue | More capacity |
+| `3` | Red + Green + Blue | Maximum capacity (default) |
+
+Use `--bit-depth` to control how many bits per channel are overwritten:
+
+| `--bit-depth` | Bits per channel | Capacity multiplier |
+|---|---|---|
+| `1` | 1 bit | Baseline (default, most covert) |
+| `2` | 2 bits | 2× capacity |
+| `3` | 3 bits | 3× capacity |
+| `4` | 4 bits | 4× capacity, visible artifacts |
+
+## Using the Python API
+
+Instantiate `LSBSteganography` with a loaded `BMPFile`, then call `hide_text()` for string messages or `hide_data()` for raw bytes:
+
+```python
+from bmp_manipulator import BMPFile, LSBSteganography
+
+bmp = BMPFile("photo.bmp")
+stego = LSBSteganography(bmp)
+
+# Hide text
+stego.hide_text(
+    "This is my secret message",
+    encoding="utf-8",
+    bit_depth=1,
+    channels=3,
+    password="optional-password"
+)
+bmp.save("photo_stego.bmp")
+
+# Hide binary data
+with open("secret.pdf", "rb") as f:
+    data = f.read()
+stego.hide_data(data, bit_depth=1, channels=3)
+bmp.save("photo_with_file.bmp")
+```
+
+<Note>
+To retrieve hidden content from a stego BMP, see [Extract Hidden Data](/guides/extract-data) for the corresponding `stego extract` CLI command and `extract_text()` / `extract_data()` API methods.
+</Note>
+
+<Tip>
+Keep `--bit-depth` at 1 or 2 for the best resistance to automated steganalysis — higher values introduce statistical anomalies that detection tools can flag. For any sensitive payload, always supply `--password` to encrypt the data with AES-256-GCM before it is embedded; this ensures the content remains unreadable even if an observer detects that steganography was used.
+</Tip>

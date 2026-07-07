@@ -1,0 +1,114 @@
+# Source: https://github.com/soyluoltu/bmp-manipulations/commits/bmp_analiz
+
+[soyluoltu](https://github.com/soyluoltu) / **[bmp-manipulations](https://github.com/soyluoltu/bmp-manipulations)** Public
+
+- [Notifications](https://github.com/login?return_to=%2Fsoyluoltu%2Fbmp-manipulations) You must be signed in to change notification settings
+- [Fork 0](https://github.com/login?return_to=%2Fsoyluoltu%2Fbmp-manipulations)
+- [Star 0](https://github.com/login?return_to=%2Fsoyluoltu%2Fbmp-manipulations)
+ 
+
+ 
+
+## Branch selector
+
+ bmp\_analiz
+
+## User selector
+
+All users
+
+All time
+
+## Commit history
+
+### Commits on Apr 11, 2025
+
+- #### [Create Bmp\_analiz\_gui.py](https://github.com/soyluoltu/bmp-manipulations/commit/a8ff2383de970e5a3435a9e61665bb39a8eeddb9)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [a8ff238](https://github.com/soyluoltu/bmp-manipulations/commit/a8ff2383de970e5a3435a9e61665bb39a8eeddb9)
+ 
+ Copy full SHA for a8ff238
+ 
+- #### [Update readme.md](https://github.com/soyluoltu/bmp-manipulations/commit/b0c2316d9089d78de2a807ff93148337dd10fd79)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ authored
+ 
+ [b0c2316](https://github.com/soyluoltu/bmp-manipulations/commit/b0c2316d9089d78de2a807ff93148337dd10fd79)
+ 
+ Copy full SHA for b0c2316
+ 
+- #### [Update readme.md](https://github.com/soyluoltu/bmp-manipulations/commit/6f63428d3870c5b8bb7af1ffe933ec859eb9098f)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ authored
+ 
+ [6f63428](https://github.com/soyluoltu/bmp-manipulations/commit/6f63428d3870c5b8bb7af1ffe933ec859eb9098f)
+ 
+ Copy full SHA for 6f63428
+ 
+- #### [code](https://github.com/soyluoltu/bmp-manipulations/commit/35d0820b9e9219b8a588ef7a250247ba49c31e1a)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [35d0820](https://github.com/soyluoltu/bmp-manipulations/commit/35d0820b9e9219b8a588ef7a250247ba49c31e1a)
+ 
+ Copy full SHA for 35d0820
+ 
+- #### [readme](https://github.com/soyluoltu/bmp-manipulations/commit/c1c84158407047c30b3ec28c9612243c5073d450)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [c1c8415](https://github.com/soyluoltu/bmp-manipulations/commit/c1c84158407047c30b3ec28c9612243c5073d450)
+ 
+ Copy full SHA for c1c8415
+ 
+- #### [Update bmp-structure.md](https://github.com/soyluoltu/bmp-manipulations/commit/4521cb0a4151f1b7a7cb3923da2d97df21a08e41)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [4521cb0](https://github.com/soyluoltu/bmp-manipulations/commit/4521cb0a4151f1b7a7cb3923da2d97df21a08e41)
+ 
+ Copy full SHA for 4521cb0
+ 
+- #### [readme](https://github.com/soyluoltu/bmp-manipulations/commit/c604448ac1ce1ff7da284d46c38489493fabb4fc)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [c604448](https://github.com/soyluoltu/bmp-manipulations/commit/c604448ac1ce1ff7da284d46c38489493fabb4fc)
+ 
+ Copy full SHA for c604448
+ 
+- #### [Create readme.md](https://github.com/soyluoltu/bmp-manipulations/commit/3172945bfea2e02990681390b03b9c1cc8931257)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [3172945](https://github.com/soyluoltu/bmp-manipulations/commit/3172945bfea2e02990681390b03b9c1cc8931257)
+ 
+ Copy full SHA for 3172945
+ 
+- #### [Initial commit](https://github.com/soyluoltu/bmp-manipulations/commit/5dd0bf39565298f0b1ecc3b26f4baf64c97a25bc)
+ 
+ [![soyluoltu](https://avatars.githubusercontent.com/u/96131980?v=4&size=32)](https://github.com/soyluoltu) [soyluoltu](https://github.com/soyluoltu/bmp-manipulations/commits?author=soyluoltu)
+ 
+ committed
+ 
+ [5dd0bf3](https://github.com/soyluoltu/bmp-manipulations/commit/5dd0bf39565298f0b1ecc3b26f4baf64c97a25bc)
+ 
+ Copy full SHA for 5dd0bf3

@@ -1,0 +1,169 @@
+---
+title: "BMP Manipulator CLI Command Reference"
+sidebarTitle: "CLI Reference"
+description: "Complete reference for bmp_manipulator.py CLI commands: info, metadata add/extract, and stego hide/extract with all flags and usage examples."
+---
+
+The CLI is the fastest way to inspect files and perform metadata and steganography operations without writing Python code. Every operation is a single command, and all flags map directly to the underlying Python API.
+
+## Global Usage
+
+```bash
+python bmp_manipulator.py <command> [subcommand] [arguments]
+```
+
+---
+
+## info
+
+Inspect a BMP file and display its header information, dimensions, color depth, and metadata status.
+
+```bash
+python bmp_manipulator.py info <file>
+```
+
+| Argument | Required | Description |
+|---|---|---|
+| `<file>` | Yes | Path to the BMP file |
+
+**Example**
+
+```bash
+python bmp_manipulator.py info photo.bmp
+```
+
+**Sample output**
+
+```
+File: photo.bmp
+Size: 1,382,454 bytes
+Header Type: BITMAPINFOHEADER
+Dimensions: 800 x 576
+Bit Depth: 24
+Compression: BI_RGB
+Metadata: None
+```
+
+---
+
+## metadata add
+
+Embed a key-value metadata entry into a BMP file. Pass `--password` to encrypt the entry with AES-256-GCM before storage.
+
+```bash
+python bmp_manipulator.py metadata add <file> --key <key> --value <value> --output <output> [--password <password>]
+```
+
+| Flag | Required | Description |
+|---|---|---|
+| `<file>` | Yes | Input BMP file |
+| `--key` | Yes | Metadata key name |
+| `--value` | Yes | Metadata value string |
+| `--output` | Yes | Output BMP file path |
+| `--password` | No | Password for AES-256-GCM encryption |
+
+**Examples**
+
+```bash
+# Plain metadata
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Author" --value "Alice" \
+  --output photo_meta.bmp
+
+# Encrypted metadata
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Secret" --value "Top secret" \
+  --password "strongpass" \
+  --output photo_enc.bmp
+```
+
+---
+
+## metadata extract
+
+Read and display metadata stored in a BMP file. Supply `--password` if the metadata was encrypted during storage.
+
+```bash
+python bmp_manipulator.py metadata extract <file> [--password <password>]
+```
+
+| Flag | Required | Description |
+|---|---|---|
+| `<file>` | Yes | BMP file containing metadata |
+| `--password` | No | Decryption password |
+
+**Examples**
+
+```bash
+python bmp_manipulator.py metadata extract photo_meta.bmp
+python bmp_manipulator.py metadata extract photo_enc.bmp --password "strongpass"
+```
+
+---
+
+## stego hide
+
+Conceal a text string or binary file inside a BMP carrier image using LSB steganography. Use `--bit-depth` and `--channels` to trade capacity for visual fidelity.
+
+```bash
+python bmp_manipulator.py stego hide <file> (--text <text> | --file <file>) --output <output> [options]
+```
+
+| Flag | Required | Description |
+|---|---|---|
+| `<file>` | Yes | Input BMP file |
+| `--text <text>` | Yes* | Text to hide (mutually exclusive with `--file`) |
+| `--file <path>` | Yes* | File to hide (mutually exclusive with `--text`) |
+| `--output` | Yes | Output BMP path |
+| `--bit-depth` | No | Bits per channel: 1–4 (default: `1`) |
+| `--channels` | No | Number of channels: 1–3 (default: `3`) |
+| `--password` | No | Encryption password |
+
+\* Exactly one of `--text` or `--file` is required.
+
+**Examples**
+
+```bash
+# Hide text
+python bmp_manipulator.py stego hide photo.bmp \
+  --text "Secret message" --output stego.bmp
+
+# Hide file, encrypted, custom bit depth
+python bmp_manipulator.py stego hide photo.bmp \
+  --file secret.pdf \
+  --bit-depth 2 --channels 3 \
+  --password "mypassword" \
+  --output stego_enc.bmp
+```
+
+---
+
+## stego extract
+
+Recover data hidden inside a BMP file. Print text payloads to stdout, or save binary payloads to a file with `--output`.
+
+```bash
+python bmp_manipulator.py stego extract <file> [--output <path>] [--bit-depth <n>] [--channels <n>] [--password <password>]
+```
+
+| Flag | Required | Description |
+|---|---|---|
+| `<file>` | Yes | BMP file containing hidden data |
+| `--output` | No | Save extracted payload to file instead of printing |
+| `--bit-depth` | No | Must match value used during hiding (default: `1`) |
+| `--channels` | No | Must match value used during hiding (default: `3`) |
+| `--password` | No | Decryption password |
+
+**Examples**
+
+```bash
+python bmp_manipulator.py stego extract stego.bmp
+python bmp_manipulator.py stego extract stego_enc.bmp \
+  --bit-depth 2 --channels 3 \
+  --password "mypassword" \
+  --output recovered.pdf
+```
+
+<Warning>
+  `--bit-depth` and `--channels` must exactly match the values used during hiding. Mismatched parameters will cause extraction to fail or return garbage data.
+</Warning>

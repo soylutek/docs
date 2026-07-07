@@ -1,0 +1,53 @@
+---
+title: "Security and Steganalysis Resistance Guidelines"
+sidebarTitle: "Security"
+description: "Follow these security best practices when using BMP Manipulator to maximize encryption strength and minimize the risk of steganalysis detection."
+---
+
+BMP Manipulator gives you two independent layers of protection: steganography hides the *existence* of your data inside an innocent-looking image, and encryption protects the *content* of that data even if someone discovers it. Use both layers together for the strongest security posture.
+
+## Encryption Algorithms
+
+BMP Manipulator uses authenticated encryption, which simultaneously provides confidentiality and tamper detection. An attacker who modifies the ciphertext will cause decryption to fail rather than silently returning wrong data.
+
+| Algorithm | Key Size | Mode | Notes |
+|---|---|---|---|
+| AES-256-GCM | 256 bits | Authenticated encryption | Default; provides confidentiality + tamper detection |
+| ChaCha20-Poly1305 | 256 bits | Authenticated encryption | Stream cipher alternative; well-suited for software-only environments |
+
+**Key derivation** — Your password is never used directly as a key. BMP Manipulator derives a 256-bit key from your password using PBKDF2HMAC (SHA-256, 100,000 iterations, random 16-byte salt). Each encryption operation generates a unique salt and nonce, so two encryptions of the same plaintext with the same password produce different ciphertext.
+
+## Steganography Detection Resistance
+
+LSB steganography leaves statistical traces in pixel values. Follow these guidelines to minimise the signal:
+
+- **Keep `--bit-depth` at 1 or 2.** Higher values alter more bits per pixel, causing pixel-value statistics to shift in ways that steganalysis tools can detect.
+- **Use all 3 channels (`--channels 3`).** Spreading changes evenly across the red, green, and blue channels produces a less concentrated statistical signature than modifying a single channel.
+- **Use large, natural-looking photos.** Photographs of real-world scenes contain natural noise that masks LSB changes. Solid-colour images, screenshots, and generated graphics have flat histograms that make modifications obvious.
+- **Take advantage of scattered embedding.** BMP Manipulator distributes the hidden payload across non-sequential pixel positions rather than writing it sequentially from the first pixel, which reduces the statistical signatures that sequential embedding leaves behind.
+
+## Best Practices
+
+1. Always use `--password` for any sensitive payload.
+2. Use a strong, unique password — 16 or more characters mixing uppercase, lowercase, numbers, and symbols.
+3. Prefer high-resolution 24-bit or 32-bit BMPs as carriers for maximum capacity and resistance.
+4. Combine metadata encryption and steganography encryption together for defence in depth.
+5. Do not reuse the same carrier BMP multiple times; each new embedding operation increases the statistical footprint.
+6. Do not share the carrier BMP publicly after hiding data.
+
+## Limitations
+
+<Warning>
+  Understand what BMP Manipulator does *not* protect you from:
+
+  - **Steganography alone does NOT guarantee security.** It only hides the existence of data. If someone knows or suspects you use steganography, they can search for it.
+  - **Statistical steganalysis tools** (e.g., StegExpose) can detect LSB patterns in some images, especially those with low resolution or artificially uniform pixel values.
+  - **The tool provides no anonymity or network-level security.** Metadata outside the BMP file — file system timestamps, transmission logs, and so on — may still reveal that you handled a given file.
+  - **There is no password recovery.** Losing your password means permanently losing access to any encrypted payload. Store passwords securely using a password manager.
+</Warning>
+
+## Responsible Use
+
+<Note>
+  Steganography and encryption are powerful tools with legitimate uses in privacy, journalism, and security research. You are responsible for ensuring your use of BMP Manipulator complies with all applicable laws and regulations in your jurisdiction. Some regions restrict the use or export of strong encryption, and using steganography to conceal illegal content is unlawful regardless of jurisdiction.
+</Note>

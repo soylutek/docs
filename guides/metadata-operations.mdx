@@ -1,0 +1,102 @@
+---
+title: "Add and Extract Metadata from BMP Files"
+sidebarTitle: "Metadata Operations"
+description: "Embed custom key-value metadata into BMP files using the CLI or Python API, with CRC32 integrity checking and optional AES-256-GCM encryption."
+---
+
+BMP Manipulator lets you embed arbitrary key-value pairs directly inside a BMP file using a custom BMPM block appended after the pixel data. You can store authorship information, timestamps, project tags, licensing terms, or any other string data you need to travel with the image. Each block is protected by a CRC32 checksum so you can detect accidental corruption, and you can optionally encrypt the entire block with AES-256-GCM so the contents remain private even if the file is shared.
+
+## Add Metadata (CLI)
+
+Use the `metadata add` subcommand with `--key` and `--value` to embed a single entry, then write the result to a new file with `--output`:
+
+```bash
+# Basic key-value
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Author" --value "Alice" \
+  --output photo_meta.bmp
+
+# Encrypted metadata
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Secret Note" --value "For your eyes only" \
+  --password "strong-password" \
+  --output photo_secure.bmp
+```
+
+| Flag | Description |
+|---|---|
+| `--key` | The metadata field name |
+| `--value` | The metadata value (string) |
+| `--password` | Optional; enables AES-256-GCM encryption of the metadata block |
+| `--output` | Path for the output BMP file |
+
+## Extract Metadata (CLI)
+
+Use `metadata extract` to read and display all entries stored in a file. Pass `--password` when the block was encrypted:
+
+```bash
+# Extract all metadata
+python bmp_manipulator.py metadata extract photo_meta.bmp
+
+# Extract encrypted metadata
+python bmp_manipulator.py metadata extract photo_secure.bmp \
+  --password "strong-password"
+```
+
+## Add Multiple Entries
+
+Each call to `metadata add` appends one entry. To embed several fields, chain the commands so that each call operates on the output of the previous one:
+
+```bash
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Author" --value "Alice" --output step1.bmp
+
+python bmp_manipulator.py metadata add step1.bmp \
+  --key "Date" --value "2024-01-15" --output step2.bmp
+
+python bmp_manipulator.py metadata add step2.bmp \
+  --key "Project" --value "Research" --output photo_meta.bmp
+```
+
+## Using the Python API
+
+Import `Metadata` and `MetadataStorageMethod` alongside `BMPFile` to manage metadata programmatically:
+
+```python
+from bmp_manipulator import BMPFile, Metadata, MetadataStorageMethod
+
+bmp = BMPFile("photo.bmp")
+
+# Create and populate metadata
+meta = Metadata()
+meta.add("Author", "Alice")
+meta.add("Date", "2024-01-15")
+meta.add("Project", "Research")
+
+# Embed (EOF append is default and recommended)
+bmp.add_metadata(
+    meta,
+    method=MetadataStorageMethod.EOF_APPEND,
+    password="strong-password"  # optional
+)
+bmp.save("photo_meta.bmp")
+
+# Extract
+extracted = bmp.extract_metadata(password="strong-password")
+print(extracted.to_dict())
+# {'Author': 'Alice', 'Date': '2024-01-15', 'Project': 'Research'}
+```
+
+## Storage Methods
+
+BMP Manipulator supports three storage strategies. Pass the desired constant as the `method` argument to `add_metadata()`:
+
+| Method | Description |
+|---|---|
+| `MetadataStorageMethod.EOF_APPEND` | Appends the BMPM block after the pixel data. **Default and recommended** for most use cases — it does not alter any header fields. |
+| `MetadataStorageMethod.HEADER_EXTENSION` | Writes metadata into unused or reserved fields within the DIB header. Suitable for very small payloads. |
+| `MetadataStorageMethod.APPLICATION_BLOCK` | Inserts a custom application extension block after the pixel data with an application-specific identifier. |
+
+<Warning>
+Re-saving a file with standard image editing software (such as Paint, GIMP, or Photoshop) will strip the BMPM metadata block entirely. Those applications write a clean BMP from decoded pixel data and do not preserve unrecognised trailing blocks. Always keep an original copy or re-embed the metadata after any external editing.
+</Warning>

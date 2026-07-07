@@ -1,0 +1,90 @@
+---
+title: "Steganography Techniques in BMP Manipulator"
+sidebarTitle: "Steganography"
+description: "BMP Manipulator supports LSB, palette-based, and header-field steganography to hide text or binary data invisibly inside BMP image files."
+---
+
+Steganography is the practice of hiding a secret message inside an innocuous carrier — in this case, a BMP image file. The goal is not just to protect the content (that is encryption's job), but to conceal the very existence of the hidden data. A steganographically altered BMP should look identical to the original: same image, same file extension, same behavior in every viewer. BMP Manipulator exploits the structural slack and perceptual noise inherent in the BMP format to embed data that is invisible both to the human eye and, when used carefully, to automated detection tools.
+
+## LSB Steganography
+
+Least Significant Bit (LSB) steganography is the primary and most capable hiding technique in BMP Manipulator. It works by replacing the lowest-order bits of pixel channel values with bits from your secret payload. Because the LSB contributes only a fraction of a channel's total intensity range (a change from `10101100` to `10101101` shifts a blue value by just 1 out of 255), the visual difference is imperceptible.
+
+**Configurable bit depth (1–4 bits per channel)**
+
+You control how many bits per channel are overwritten:
+
+- **1 bit** — Least detectable. Alters each channel value by at most 1. Recommended for most use cases.
+- **2 bits** — Doubles capacity at a modest increase in detectability.
+- **3–4 bits** — Maximum capacity, but introduces visible artifacts in uniform or near-uniform image regions and increases statistical detectability. Use only when capacity is the priority and the carrier image has natural texture throughout.
+
+**Channel selection**
+
+You also choose which colour channels carry the payload:
+
+- `1` — Blue channel only
+- `2` — Green and Blue channels
+- `3` — All three RGB channels (highest capacity)
+
+**Capacity formula**
+
+The maximum bytes you can embed is:
+
+```text
+floor(width × height × channels × bit_depth / 8) - overhead_bytes
+```
+
+**Example:** An 800×600 24-bit BMP, using 1-bit depth across all 3 channels:
+
+```text
+floor(800 × 600 × 3 × 1 / 8) = 180,000 bytes ≈ 175 KB
+```
+
+That is enough for long text messages, small documents, or compressed data — all hidden in a single image without any visible change.
+
+## Palette-Based Steganography
+
+For 8-bit indexed BMP files, BMP Manipulator can hide data using the reserved byte in each palette entry. Every colour table entry in an 8-bit BMP is a four-byte `RGBQUAD` structure: one byte each for blue, green, and red, plus one reserved byte that is always set to zero by compliant encoders and always ignored by decoders.
+
+BMP Manipulator writes your payload bytes into those reserved slots — one byte per palette entry. This technique has three notable properties:
+
+- **Very low detectability** on images with few colours. There are no pixel values to analyse statistically; the data hides in the colour table metadata.
+- **No visual change** whatsoever. Pixel values reference palette indices; changing a palette entry's reserved byte does not affect what any pixel displays.
+- **Capacity is bounded** by the palette size: a maximum of 256 entries × 1 byte = **256 bytes** for an 8-bit image.
+
+Use palette steganography when your carrier is an 8-bit BMP and your payload is short — tokens, keys, short identifiers, or compact flags.
+
+## Header Field Steganography
+
+BMP Manipulator can embed a small number of bytes directly into specific header fields that have no effect on image rendering:
+
+- `bfReserved1` and `bfReserved2` — 2 bytes each in the file header; always zero in standard files; completely ignored by all readers
+- `biXPelsPerMeter` — 4 bytes; a display DPI hint that virtually no renderer acts on
+- `biYPelsPerMeter` — 4 bytes; same as above
+
+Combined, these fields provide up to **10 bytes** of usable space. That is enough for a short signature, a version tag, or a lookup key that points to data stored elsewhere.
+
+Header field steganography offers the lowest detectability of any technique: the fields are expected to exist, they always have valid-looking values, and their content is never displayed or validated by image software. The tradeoff is that 10 bytes is all you get.
+
+## Choosing a Technique
+
+Use this table to match your requirements to the right technique:
+
+| Technique | Capacity | Detectability | Best For |
+|---|---|---|---|
+| LSB (1-bit) | High (~175 KB in an 800×600 image) | Low | Text, small files, general use |
+| LSB (2–4 bit) | Very High (up to 4× higher) | Medium | Larger payloads, textured images |
+| Palette | Low (≤ 256 bytes) | Very Low | 8-bit BMPs, short tokens |
+| Header Fields | Minimal (≤ 10 bytes) | Minimal | Signatures, keys, version tags |
+
+<Warning>
+LSB steganography can be detected by statistical steganalysis tools that analyse the distribution of least significant bits across pixel channels. To maximise resistance, always encrypt your payload with `--password` before embedding (this randomises the bit pattern), keep bit depth at 1, and choose carrier images with natural texture rather than flat gradients or solid colour regions.
+</Warning>
+
+## Steganalysis Resistance
+
+BMP Manipulator applies several techniques to make embedded data harder to detect even when an analyst suspects steganography has been used:
+
+- **Scattered embedding** — Payload bits are distributed non-sequentially across the pixel array using a deterministic pseudorandom mapping rather than filled in from top-left to bottom-right. This prevents the telltale signature of a clean boundary between modified and unmodified rows.
+- **Statistical noise injection** — BMP Manipulator models the natural noise distribution of the carrier image and injects calibrated variation into unoccupied channel bits to maintain histogram shape after embedding, reducing the effectiveness of chi-square and RS steganalysis.
+- **Signature avoidance** — The tool avoids known steganography tool signatures in byte sequences, header values, and payload alignment patterns, reducing hits from signature-based steganalysis scanners.

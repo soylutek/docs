@@ -1,0 +1,54 @@
+---
+title: "Understanding the BMP File Format Structure"
+sidebarTitle: "BMP Format"
+description: "Learn the BMP file structure including file headers, DIB headers, color palettes, pixel data, and which fields BMP Manipulator can read and modify."
+---
+
+The BMP (Bitmap) format is one of the oldest and simplest raster image formats in widespread use. Unlike JPEG or PNG, BMP stores pixel data without lossy compression and uses a well-documented, fixed-layout binary structure. That predictability is exactly what makes BMP ideal for metadata storage and steganography: you always know precisely where each byte lives, which fields renderers ignore, and where you can insert data without disturbing the visible image.
+
+## File Layout
+
+Every BMP file is composed of a sequence of sections in a fixed order. BMP Manipulator understands all of them:
+
+| Section | Size | Description |
+|---|---|---|
+| BITMAPFILEHEADER | 14 bytes | File type magic (`BM`), total file size, pixel data offset |
+| DIB Header | 40–124 bytes | Image dimensions, bit depth, compression type |
+| Color Palette | Optional | Used for 8-bit indexed images; 4 bytes per entry |
+| Bit Masks | Optional | Channel masking for 16-bit and 32-bit images |
+| Pixel Data | Variable | Raw pixel rows, each padded to 4-byte alignment |
+| ICC Color Profile | Optional | Color management data; only present in BITMAPV5HEADER |
+| Custom Metadata | Variable | Added by BMP Manipulator using the `BMPM` signature block |
+
+The BITMAPFILEHEADER always starts at offset `0x00`. Pixel data begins at the offset recorded in the `bfOffBits` field. Any data past the end of the declared pixel area — including the BMPM metadata block — is silently ignored by standard image viewers.
+
+## DIB Header Versions
+
+The DIB (Device-Independent Bitmap) header follows immediately after the file header. BMP Manipulator supports the three most common versions:
+
+**BITMAPINFOHEADER (40 bytes)**
+The most common DIB header. It covers image width, height, bit depth, compression method, pixel array size, and display resolution fields (`biXPelsPerMeter` / `biYPelsPerMeter`). Most BMP files you encounter in the wild use this header.
+
+**BITMAPV4HEADER (108 bytes)**
+Extends BITMAPINFOHEADER with color space information, including red/green/blue/alpha channel masks, a color space type field (`bV4CSType`), gamma correction values, and CIE XYZ endpoint coordinates. Most renderers ignore these fields entirely, which makes them attractive for low-impact data hiding.
+
+**BITMAPV5HEADER (124 bytes)**
+Extends BITMAPV4HEADER with ICC color profile support (`bV5ProfileData`, `bV5ProfileSize`) and a render intent field (`bV5Intent`). Critically, it also includes `bV5Reserved` — a fully unused 4-byte field that BMP Manipulator can use for header-level data hiding.
+
+## Fields Used for Data Hiding
+
+BMP Manipulator targets specific fields across all header versions based on their hiding potential — defined as how much data the field can hold without affecting image rendering or breaking compatibility:
+
+| Field | Location | Hiding Potential | Notes |
+|---|---|---|---|
+| `bfReserved1` | File header | **High** — 2 bytes, completely unused | Always ignored by all viewers |
+| `bfReserved2` | File header | **High** — 2 bytes, completely unused | Always ignored by all viewers |
+| `biXPelsPerMeter` | DIB header | **High** — 4 bytes | Display DPI hint; ignored by almost every renderer |
+| `biYPelsPerMeter` | DIB header | **High** — 4 bytes | Display DPI hint; ignored by almost every renderer |
+| Color palette reserved byte | Color palette | **High** — 1 byte per palette entry | The 4th byte of each RGBQUAD entry is never read |
+| Pixel data row padding | Pixel data | **High** — varies by width | Padding bytes between rows exist solely for alignment |
+| EOF-appended BMPM block | After pixel data | **Very High** — arbitrary length | A structured block appended after the image; invisible to viewers |
+
+<Note>
+Understanding this layout helps you choose the right storage method for your use case. Header fields offer stealth but limited space. The BMPM block at EOF gives you unlimited capacity with built-in integrity checking. See [Metadata](/concepts/metadata) and [Steganography](/concepts/steganography) for guidance on selecting the best approach.
+</Note>

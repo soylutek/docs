@@ -1,0 +1,66 @@
+---
+title: "Supported BMP Formats and Limitations"
+sidebarTitle: "Supported Formats"
+description: "BMP Manipulator supports BITMAPINFOHEADER, V4, and V5 headers with 8-bit, 24-bit, and 32-bit color depths. Compressed and BITMAPCOREHEADER files are not supported."
+---
+
+BMP Manipulator works with the most common BMP variants you encounter in practice, but not every variant the format specification allows. Review the tables below before processing a file to confirm it falls within supported boundaries.
+
+## Supported Header Types
+
+BMP Manipulator recognises three DIB header versions. All three receive full read, write, metadata, and steganography support.
+
+| Header | Size | Version | Notes |
+|---|---|---|---|
+| `BITMAPINFOHEADER` | 40 bytes | Windows 3.x+ | Most common; full support |
+| `BITMAPV4HEADER` | 108 bytes | Windows 95+ | Adds color space information; full support |
+| `BITMAPV5HEADER` | 124 bytes | Windows 98+ | Adds ICC color profile; full support |
+
+## Supported Color Depths
+
+| Bit Depth | Description | Steganography Support |
+|---|---|---|
+| 8-bit | Indexed color (palette) | Palette-based steganography |
+| 24-bit | RGB | LSB steganography |
+| 32-bit | RGBA | LSB steganography |
+
+## Supported Compression Methods
+
+BMP Manipulator requires pixel data to be stored without compression so that individual pixel bytes can be read and modified reliably.
+
+- **`BI_RGB` (0)** — Uncompressed RGB; fully supported for all operations.
+
+The following compression methods are **not supported**:
+
+- `BI_RLE8` — 8-bit run-length encoding
+- `BI_RLE4` — 4-bit run-length encoding
+- `BI_JPEG` — JPEG-compressed pixel data
+- `BI_PNG` — PNG-compressed pixel data
+
+## Not Supported
+
+<Warning>
+  Passing an unsupported file to BMP Manipulator raises a `BMPError`. Verify your files match the supported specifications above before running operations.
+
+  - **`BITMAPCOREHEADER` (12 bytes)** — Very old OS/2 format; not supported.
+  - **Any compressed BMP** (`BI_RLE8`, `BI_RLE4`, `BI_JPEG`, `BI_PNG`) — Compressed pixel data cannot be modified at the bit level.
+  - **1-bit color depth** — Monochrome images are not supported.
+  - **4-bit color depth** — 16-color indexed images are not supported.
+</Warning>
+
+## File Size Considerations
+
+The amount of data you can hide via LSB steganography scales directly with the number of pixels and the color depth of the carrier image.
+
+<Tip>
+  Choose large, high-resolution 24-bit or 32-bit BMP files as carriers. More pixels mean more hiding capacity and better steganalysis resistance, because any individual pixel change represents a smaller statistical deviation across the whole image.
+</Tip>
+
+The table below shows approximate hiding capacity for common resolutions at `--bit-depth 1` and `--bit-depth 2` using all three channels (`--channels 3`):
+
+| Resolution | Bit Depth | LSB-1 Capacity | LSB-2 Capacity |
+|---|---|---|---|
+| 640×480 | 24-bit | ~112 KB | ~225 KB |
+| 800×600 | 24-bit | ~175 KB | ~351 KB |
+| 1920×1080 | 24-bit | ~759 KB | ~1.5 MB |
+| 3840×2160 | 32-bit | ~4 MB | ~8 MB |

@@ -1,0 +1,63 @@
+---
+title: "Inspect BMP File Headers and Properties"
+sidebarTitle: "Inspect a BMP"
+description: "Use BMP Manipulator's info command or BMPFile.get_info() to read header type, dimensions, bit depth, compression, and embedded metadata from any BMP file."
+---
+
+Inspecting a BMP file gives you a complete picture of its internal structure before you make any changes. You can confirm the header version, color depth, and compression type, verify that an existing BMPM metadata block is present, and check whether the file format is compatible with steganography operations. Running an inspection first is especially useful when working with files from unknown sources or before embedding sensitive data.
+
+## Using the CLI
+
+Run the `info` subcommand and pass the path to your BMP file:
+
+```bash
+python bmp_manipulator.py info photo.bmp
+```
+
+BMP Manipulator prints a summary of every key property:
+
+```
+File: photo.bmp
+Size: 1,382,454 bytes
+Header Type: BITMAPINFOHEADER
+Dimensions: 800 x 576
+Bit Depth: 24
+Compression: BI_RGB
+Metadata: None
+Steganographic Content: Unknown
+```
+
+## Using the Python API
+
+Load the file with `BMPFile` and call `get_info()` to receive a dictionary of all properties:
+
+```python
+from bmp_manipulator import BMPFile
+
+bmp = BMPFile("photo.bmp")
+info = bmp.get_info()
+
+print(f"File: {info['file_path']}")
+print(f"Dimensions: {info['width']}x{info['height']}")
+print(f"Bit Depth: {info['bits_per_pixel']}")
+print(f"Header Type: {info['header_type']}")
+print(f"Compression: {info['compression_type']}")
+print(f"Has Metadata: {info['has_metadata']}")
+```
+
+## What the Info Fields Mean
+
+| Field | Description |
+|---|---|
+| `file_path` | Absolute path to the file |
+| `width` / `height` | Dimensions in pixels |
+| `bits_per_pixel` | Color depth: 8, 24, or 32 |
+| `header_type` | DIB header version (`BITMAPINFOHEADER`, `BITMAPV4HEADER`, or `BITMAPV5HEADER`) |
+| `compression_type` | Compression method; `BI_RGB` means the pixel data is uncompressed |
+| `pixel_data_offset` | Byte offset to the start of pixel data within the file |
+| `file_size` | Total file size in bytes |
+| `has_metadata` | Whether a BMPM metadata block is present in the file |
+
+<Tip>
+Always inspect a BMP file before running any steganography operation. BMP Manipulator's LSB steganography requires an uncompressed 24-bit or 32-bit file (`BI_RGB` compression, 24 or 32 `bits_per_pixel`). If the `info` output shows a different format — such as an 8-bit paletted image or a compressed variant — convert the file first to avoid errors during embedding.
+</Tip>

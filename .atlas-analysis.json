@@ -1,0 +1,90 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "BMP Manipulator",
+  "projectDescription": "A Python library and CLI tool for BMP file metadata management and steganography — hide text or files inside BMP images with optional encryption.",
+  "theme": "luma",
+  "primaryColor": "#848c8e",
+  "lightColor": "#11161e",
+  "darkColor": "#cfd0d2",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/bmp-format",
+              "concepts/metadata",
+              "concepts/steganography"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/inspect-bmp",
+              "guides/metadata-operations",
+              "guides/hide-data",
+              "guides/extract-data",
+              "guides/encryption",
+              "guides/gui-tool"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/cli",
+              "reference/python-api",
+              "reference/supported-formats",
+              "reference/security"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Full BMP header inspection and modification (BITMAPINFOHEADER, V4, V5)",
+    "Embedded metadata with key-value storage and CRC32 integrity checking",
+    "LSB steganography (1–4 bit depth, selectable R/G/B channels)",
+    "Palette-based and header-field steganography",
+    "AES-256-GCM and ChaCha20-Poly1305 encryption for hidden data",
+    "File hiding inside BMP images (any binary payload)",
+    "Python API for programmatic use",
+    "CLI interface with info / metadata / stego subcommands",
+    "Tkinter GUI for visual analysis, color breakdown, and report generation",
+    "Capacity calculator for estimating how much data a BMP can carry"
+  ],
+  "publicApiSurface": [
+    "BMPFile(file_path)",
+    "BMPFile.load(file_path)",
+    "BMPFile.get_info() -> dict",
+    "BMPFile.add_metadata(metadata, method, password)",
+    "BMPFile.extract_metadata(password) -> Metadata",
+    "BMPFile.save(output_path)",
+    "Metadata.add(key, value)",
+    "Metadata.get(key)",
+    "Metadata.remove(key)",
+    "Metadata.to_dict()",
+    "LSBSteganography(bmp_file)",
+    "LSBSteganography.calculate_capacity(bit_depth, channels) -> int",
+    "LSBSteganography.hide_data(data, bit_depth, channels, password)",
+    "LSBSteganography.hide_text(text, encoding, **kwargs)",
+    "LSBSteganography.extract_data(bit_depth, channels, password) -> bytes",
+    "LSBSteganography.extract_text(bmp_path, encoding, **kwargs) -> str",
+    "CLI: python bmp_manipulator.py info <file>",
+    "CLI: python bmp_manipulator.py metadata add <file> --key --value [--password] --output",
+    "CLI: python bmp_manipulator.py metadata extract <file> [--password]",
+    "CLI: python bmp_manipulator.py stego hide <file> --text|--file [--bit-depth] [--channels] [--password] --output",
+    "CLI: python bmp_manipulator.py stego extract <file> [--bit-depth] [--channels] [--password] [--output]",
+    "GUI: python source/Bmp_analiz_gui.py"
+  ]
+}

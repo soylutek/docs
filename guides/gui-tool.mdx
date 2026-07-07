@@ -1,0 +1,82 @@
+---
+title: "Analyze BMP Files with the Visual GUI Tool"
+sidebarTitle: "GUI Tool"
+description: "BMP Manipulator's Tkinter-based GUI lets you open BMP files, view header details, analyze color distribution with charts, and export analysis reports — no coding required."
+---
+
+The BMP Manipulator GUI gives you a point-and-click interface for visual inspection of BMP files. You can preview the image, explore every header field, study color distribution through interactive charts, and export a structured analysis report — all without writing a single line of code. It's ideal for non-programmers, quick one-off inspections, or situations where you want a visual overview before diving into the CLI or API.
+
+## Launch the GUI
+
+```bash
+python source/Bmp_analiz_gui.py
+```
+
+The main window opens immediately. No additional configuration is required beyond having the [dependencies installed](#requirements).
+
+## Loading a BMP File
+
+<Steps>
+  <Step title="Open the file picker">
+    Click the **Dosya Seç** (File Select) button in the toolbar, or use the **Dosya** menu → **Aç**.
+  </Step>
+  <Step title="Select your BMP file">
+    Browse to your `.bmp` file in the system file dialog and click **Open**.
+  </Step>
+  <Step title="Run the analysis">
+    Click **Analiz Et** (Analyze). The GUI reads the file, parses the header, and populates all tabs with the results.
+  </Step>
+</Steps>
+
+## Image & Info Tab
+
+The first tab gives you an at-a-glance overview of the file:
+
+- **Image preview** — the BMP rendered and scaled to fit the panel, so you can visually confirm you have the right file.
+- **File metadata panel** — a structured breakdown of the BMP header fields:
+  - Image dimensions (width × height in pixels)
+  - File size (bytes)
+  - Bit depth (e.g. 24-bit RGB, 32-bit RGBA)
+  - Header type (e.g. `BITMAPINFOHEADER`, `BITMAPV4HEADER`, `BITMAPV5HEADER`)
+  - Compression method (e.g. `BI_RGB` for uncompressed)
+  - Pixel data offset (byte position where raw pixel data begins)
+
+## Color Analysis Tab
+
+Switch to the **Color Analysis** tab after running the analysis to explore the file's color composition:
+
+- **Pie chart** — visualizes the top 10 most frequent colors in the image, with percentage labels for each slice.
+- **Color table** — lists the top 100 colors with their RGB values, pixel count, and percentage of total pixels.
+- **Color diversity ratio** — a single metric calculated as unique colors ÷ total pixels. A ratio close to 1 indicates a highly varied image; a ratio close to 0 indicates large areas of flat color.
+
+## Generating a Report
+
+Export a full analysis to a plain-text file you can archive or share:
+
+1. Open the **Analiz** menu and click **Rapor Oluştur** (Create Report).
+2. Choose a save location and filename for the `.txt` report file.
+3. The saved report includes all BMP header fields, the complete color statistics table, and analysis metadata such as the timestamp and source filename.
+
+## Current Limitations
+
+<Note>
+  Metadata management and steganography operations are **planned features** — they are not yet available in the GUI. For those operations, use the CLI or Python API:
+
+  - **Metadata add/extract** → see [/guides/metadata-operations](/guides/metadata-operations)
+  - **Steganography hide/extract** → see [/guides/hide-data](/guides/hide-data) and [/guides/extract-data](/guides/extract-data)
+</Note>
+
+## Requirements
+
+The GUI depends on three Python packages in addition to the standard library:
+
+- **Python 3.7+**
+- **Pillow** — image loading and preview rendering (`pip install Pillow`)
+- **matplotlib** — pie chart and color visualization (`pip install matplotlib`)
+- **numpy** — fast pixel-data processing (`pip install numpy`)
+
+Install all of them at once with:
+
+```bash
+pip install -r requirements.txt
+```

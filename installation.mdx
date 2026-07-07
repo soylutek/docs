@@ -1,0 +1,69 @@
+---
+title: "Install BMP Manipulator on Any Platform"
+sidebarTitle: "Installation"
+description: "Install BMP Manipulator by cloning the repository and installing Python dependencies. Requires Python 3.7+ and optionally the cryptography package."
+---
+
+This guide walks you through cloning the BMP Manipulator repository and installing its Python dependencies. BMP Manipulator requires **Python 3.7 or later** and runs on macOS, Linux, and Windows. The core image-analysis features depend on Pillow, matplotlib, and numpy. Encryption features require the optional `cryptography` package, which is strongly recommended for any security-sensitive use.
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the project from GitHub and navigate into the project directory:
+
+    ```bash
+    git clone https://github.com/soyluoltu/bmp-manipulations.git && cd bmp-manipulations
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required packages using the bundled requirements file:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    This installs the following key packages:
+
+    - **Pillow** — image loading and GUI preview
+    - **matplotlib** — colour analysis charts (GUI)
+    - **numpy** — pixel data processing (GUI)
+    - **cryptography** — AES-256-GCM and ChaCha20-Poly1305 encryption
+
+    <Note>
+      Encryption features require the `cryptography` package. If you skip this package or install dependencies in a minimal environment where it is absent, BMP Manipulator will still run — but all `--password` flags and encryption options will be disabled.
+    </Note>
+  </Step>
+
+  <Step title="Verify the installation">
+    Confirm that BMP Manipulator is ready by checking the help output for the `info` subcommand:
+
+    ```bash
+    python bmp_manipulator.py info --help
+    ```
+
+    You should see a usage summary listing available flags. You can also run a quick smoke test against any BMP file:
+
+    ```bash
+    python bmp_manipulator.py info sample.bmp
+    ```
+  </Step>
+</Steps>
+
+## Dependencies
+
+| Package | Role | Required? |
+|---|---|---|
+| `Pillow` | Image loading and GUI preview | Yes |
+| `matplotlib` | Colour analysis charts in the GUI | Yes (GUI) |
+| `numpy` | Pixel data processing | Yes (GUI) |
+| `cryptography` | AES-256-GCM and ChaCha20-Poly1305 encryption | Optional, recommended |
+
+## Running the GUI
+
+BMP Manipulator ships with a graphical analysis interface. Launch it with:
+
+```bash
+python source/Bmp_analiz_gui.py
+```
+
+The GUI provides a visual header inspector, colour distribution charts, and point-and-click access to metadata and steganography operations — no command-line flags required.

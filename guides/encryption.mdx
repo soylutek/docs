@@ -1,0 +1,111 @@
+---
+title: "Encrypt Hidden Data with AES-256 or ChaCha20"
+sidebarTitle: "Encryption"
+description: "Protect embedded metadata and steganographic payloads in BMP files with AES-256-GCM or ChaCha20-Poly1305 encryption using a password-derived key."
+---
+
+Steganography hides the *existence* of your data — a casual observer won't know anything is there. Encryption protects the *content* of that data, ensuring that even if someone discovers the hidden payload, they cannot read it without the correct password. Using both together gives you two independent layers of protection: obscurity and cryptographic security.
+
+## Prerequisites
+
+<Note>
+  Encryption support requires the `cryptography` Python package. Install it before using any `--password` flag:
+
+  ```bash
+  pip install cryptography
+  ```
+
+  All dependencies, including `cryptography`, are also bundled in the project's `requirements.txt`:
+
+  ```bash
+  pip install -r requirements.txt
+  ```
+</Note>
+
+## How Encryption Works
+
+BMP Manipulator derives a cryptographic key from your password using **PBKDF2HMAC with SHA-256 and 100,000 iterations**. This makes brute-force attacks computationally expensive even for short passwords.
+
+The derived key is then used with one of two **authenticated encryption** schemes:
+
+| Scheme | Provides |
+|---|---|
+| **AES-256-GCM** | Confidentiality + tamper detection |
+| **ChaCha20-Poly1305** | Confidentiality + tamper detection |
+
+Both schemes generate a **random salt and nonce** for every encryption operation. These values are stored alongside the ciphertext inside the BMP file and are used automatically during decryption — you only need to supply your password.
+
+## Encrypting Metadata (CLI)
+
+Pass `--password` when adding metadata to encrypt the value before storing it:
+
+```bash
+python bmp_manipulator.py metadata add photo.bmp \
+  --key "Secret" --value "Confidential value" \
+  --password "your-strong-password" \
+  --output photo_enc.bmp
+```
+
+## Encrypting Steganographic Data (CLI)
+
+Add `--password` to any `stego hide` command to encrypt the payload before embedding it in the pixel data:
+
+```bash
+# Text
+python bmp_manipulator.py stego hide photo.bmp \
+  --text "Top secret message" \
+  --password "your-strong-password" \
+  --output photo_stego_enc.bmp
+
+# File
+python bmp_manipulator.py stego hide photo.bmp \
+  --file classified.pdf \
+  --password "your-strong-password" \
+  --output photo_file_enc.bmp
+```
+
+## Using the Python API
+
+```python
+from bmp_manipulator import BMPFile, Metadata, LSBSteganography, MetadataStorageMethod
+
+bmp = BMPFile("photo.bmp")
+
+# Encrypted metadata
+meta = Metadata()
+meta.add("Classified", "Top secret value")
+bmp.add_metadata(meta, password="your-strong-password")
+bmp.save("photo_enc.bmp")
+
+# Encrypted steganography
+stego = LSBSteganography(bmp)
+stego.hide_text("Top secret", password="your-strong-password")
+bmp.save("photo_stego_enc.bmp")
+```
+
+## Decrypting on Extraction
+
+Supply the same password you used during encryption. BMP Manipulator reads the stored salt and nonce automatically and decrypts the payload transparently:
+
+```bash
+python bmp_manipulator.py metadata extract photo_enc.bmp \
+  --password "your-strong-password"
+
+python bmp_manipulator.py stego extract photo_stego_enc.bmp \
+  --password "your-strong-password"
+```
+
+## Best Practices
+
+<Tip>
+  Follow these recommendations to get the most out of BMP Manipulator's encryption:
+
+  1. **Use a password manager** to generate and store strong, random passwords — never reuse passwords across files.
+  2. **Combine both encryption layers** — encrypt metadata *and* steganographic payloads in the same file for double protection.
+  3. **Keep bit-depth at 1–2** when hiding data; lower bit-depth produces less statistical deviation, making the file harder to flag with steganalysis tools.
+  4. **Use large BMP files** — higher-resolution images contain more pixels, giving the steganographic payload more noise to blend into.
+</Tip>
+
+<Warning>
+  If you lose the password used for encryption, **the payload is permanently inaccessible**. There is no recovery mechanism, back door, or master key. Store passwords securely before writing encrypted data to a file.
+</Warning>
